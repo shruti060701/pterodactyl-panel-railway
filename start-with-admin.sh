@@ -31,4 +31,13 @@ else
   echo "ADMIN_EMAIL or ADMIN_PASSWORD is not set - no administrator will be created." >&2
 fi
 
+# The panel's nginx config hardcodes port 80. A platform assigns a port instead,
+# and the assignment does not always survive being packaged into a template - so
+# the port is rewritten here from the environment rather than relied upon.
+LISTEN_PORT="${PORT:-80}"
+if [ -f /etc/nginx/http.d/panel.conf ]; then
+  sed -i "s/listen  *80;/listen ${LISTEN_PORT};/" /etc/nginx/http.d/panel.conf
+  echo "nginx listening on ${LISTEN_PORT}"
+fi
+
 exec supervisord -n -c /etc/supervisord.conf
