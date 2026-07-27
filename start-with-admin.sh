@@ -1,6 +1,9 @@
 #!/bin/ash
-set -e
 cd /app
+
+# Deliberately not `set -e`: if the account step fails the panel should still come
+# up and say why in the log, rather than the container dying and taking the only
+# copy of the error with it.
 
 # Runs after the image's entrypoint has migrated and seeded the database.
 # Everything here is first-boot only: on later starts the account already exists
