@@ -42,6 +42,8 @@ Almost nothing needs your input. `APP_KEY` is auto-generated once and stable via
 
 ## Dependencies for Pterodactyl Panel Hosting
 
+Running Pterodactyl Panel means running three services together, plus at least one separate machine to actually host game servers.
+
 ### Deployment Dependencies
 
 Three services, wired together automatically: the **Panel** (this repo, built from `ghcr.io/pterodactyl/panel:v1.14.1`), **Redis** (`redis:8.6.5-alpine`) for cache/session/queue, and **MariaDB** (`mariadb:11.8.8`) for the database. A **Wings node** is the one piece deliberately not provisioned here — a separate Docker-capable machine you register from inside the panel afterward, with its own open ports. See [pterodactyl.io](https://pterodactyl.io) for Wings installation.
