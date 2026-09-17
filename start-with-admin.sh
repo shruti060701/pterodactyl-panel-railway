@@ -5,9 +5,21 @@ cd /app
 # up and say why in the log, rather than the container dying and taking the only
 # copy of the error with it.
 
-# Runs after the image's entrypoint has migrated and seeded the database.
-# Everything here is first-boot only: on later starts the account already exists
-# and nothing is touched, so a redeploy does not reset the password.
+# The image's entrypoint migrates before handing off here, but its readiness
+# check is a bare TCP connect against the database host. On a brand new
+# MariaDB volume the port can accept connections before MariaDB has finished
+# creating its own database and user from MARIADB_DATABASE/MARIADB_USER, so
+# on that very first boot a handful of migrations can silently fail to apply
+# while others succeed - enough for the users table to exist (so the admin
+# account gets created below) but not enough for login to work, which fails
+# with a generic QueryException until the next deploy. Migrations are
+# idempotent, so re-running here is a no-op on every later boot and closes
+# that race on the first one.
+php artisan migrate --force --no-interaction 2>&1 | tail -5
+
+# Runs after the migration above. Everything past this point is first-boot
+# only: on later starts the account already exists and nothing is touched,
+# so a redeploy does not reset the password.
 if [ -n "$ADMIN_EMAIL" ] && [ -n "$ADMIN_PASSWORD" ]; then
   USERS=$(php artisan tinker --execute="echo \App\Models\User::count();" 2>/dev/null | tail -n1 | tr -dc '0-9')
 
